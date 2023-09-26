@@ -114,10 +114,14 @@ end
 
 function CrowbarWindow:doUnlock()
     if self.mode == MODE_VEHICLE_DOOR then	-- ДВЕРЬ МАШИНЫ
-        self.lockpick_object:getDoor():setLocked(false);
-		self.lockpick_object:getDoor():setOpen(true);
-		self.lockpick_object:getDoor():setLockBroken(true);
+        --self.lockpick_object:getDoor():setLocked(false);
+		--self.lockpick_object:getDoor():setOpen(true);
+		--self.lockpick_object:getDoor():setLockBroken(true);
+
+        sendClientCommand(self.character, 'crowbar', 'vehicleDoor', { vehicle=self.lockpick_object:getVehicle():getId(), part=self.lockpick_object:getId() })
+
         self.character:getEmitter():playSound("UnlockDoor");
+
     elseif self.mode == MODE_WINDOW then	-- ОКНО
         self.lockpick_object:setIsLocked(false)
 
