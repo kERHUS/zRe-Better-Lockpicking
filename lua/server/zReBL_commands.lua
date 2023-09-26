@@ -14,6 +14,7 @@ local function crowbarCommands(module, command, player, args)
         if not part:getDoor() then return end
 
         part:getDoor():setLocked(false)
+        part:getDoor():setOpen(true)
         part:getDoor():setLockBroken(true)
 
         vehicle:transmitPartDoor(part)
