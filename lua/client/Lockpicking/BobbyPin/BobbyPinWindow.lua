@@ -8,7 +8,7 @@ local MODE_BUILDING_DOOR = 2
 local xPos = 125
 local yPos = 250
 
-local pickLockHealth = 230
+local pickLockHealth = 300
 
 local tmpVec1 = Vector3f.new()
 local tmpVec2 = Vector3f.new():set(1, 0, 0)
@@ -110,8 +110,9 @@ function BobbyPinWindow:doLock()
 end
 
 function BobbyPinWindow:doUnlock()
-    if self.mode == MODE_VEHICLE_DOOR then
-        self.lockpick_object:getDoor():setLocked(false)
+    if self.mode == MODE_VEHICLE_DOOR then					-- ВЗЛОМ МАШИНЫ
+        --self.lockpick_object:getDoor():setLocked(false)
+		sendClientCommand(self.character, 'screwdriver', 'vehicleDoor', { vehicle=self.lockpick_object:getVehicle():getId(), part=self.lockpick_object:getId() }) -- (c) Chuckleberry "GOD OF GODS" Finn
         self.character:getEmitter():playSound("bobby_success");
     elseif self.mode == MODE_VEHICLE_ENGINE_KEY then
         self.lockpick_object:tryStartEngine(true)
@@ -341,7 +342,8 @@ function BobbyPinWindow:create()
     self.cancel:instantiate();
     self.cancel.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.cancel);
-
+	
+	--[[
     if self.goToOpen then
         self.forceButton = ISButton:new((self:getWidth() / 2) - 100, self:getHeight() - 30, 200, 20, getText("UI_ForceUnlock") .. " (" .. forceUnlockChance(self.character) .. "%)", self, BobbyPinWindow.onOptionMouseDown);
         self.forceButton.internal = "FORCE";
@@ -350,6 +352,7 @@ function BobbyPinWindow:create()
         self.forceButton.borderColor = {r=1, g=1, b=1, a=0.1};
         self:addChild(self.forceButton)
     end
+	]]
 end
 
 
@@ -384,7 +387,8 @@ BobbyPinWindow.OnKeyKeepPressed = function(key)
     if win.breakTimer > 0 then return end
 
     if key == Keyboard.KEY_A or key == Keyboard.KEY_D or key == Keyboard.KEY_W or key == Keyboard.KEY_S then
-        win.angleScrew = win.angleScrew + 3
+        -- win.angleScrew = win.angleScrew + 3
+		win.angleScrew = win.angleScrew + UIManager.getMillisSinceLastRender() * 0.23 -- Thanks to Albion!
         if win.angleScrew > win.maxAngle then 
             win.angleScrew = win.maxAngle
             if win.angleScrew == 90 then
@@ -397,9 +401,10 @@ BobbyPinWindow.OnKeyKeepPressed = function(key)
                 win.isEnd = true
                 win.breakTimer = 1
             else
-                pickLockHealth = pickLockHealth - 1
+                -- pickLockHealth = pickLockHealth - 1 UIManager.getMillisSinceLastRender() * 0.1
+				pickLockHealth = pickLockHealth - UIManager.getMillisSinceLastRender() * 0.1 -- Thanks to Albion!
                 if pickLockHealth <= 0 then
-                    win.breakTimer = 5
+                    win.breakTimer = 3
                     win.character:getEmitter():playSound("bobby_fail")
                     pickLockHealth = 300
 
@@ -426,7 +431,10 @@ BobbyPinWindow.OnKeyKeepPressed = function(key)
 
     
     if key == Keyboard.KEY_ESCAPE then
-        win:close()
+        --win:close()
+		win:setVisible(false);			-- zRe Force Close FIX
+        win:removeFromUIManager();		-- zRe Force Close FIX
+        win:close()						-- zRe Force Close FIX
     end
 end
 
@@ -437,7 +445,8 @@ BobbyPinWindow.onTick = function()
         lastMillis = currentMillis
 
         if BobbyPinWindow.instance == nil or BobbyPinWindow.instance.isEnd then return end
-        BobbyPinWindow.instance.angleScrew = BobbyPinWindow.instance.angleScrew - 1
+        -- BobbyPinWindow.instance.angleScrew = BobbyPinWindow.instance.angleScrew - 1
+		BobbyPinWindow.instance.angleScrew = BobbyPinWindow.instance.angleScrew - UIManager.getMillisSinceLastRender() * 0.04 -- Thanks to Albion! 
         if BobbyPinWindow.instance.angleScrew < 0 then BobbyPinWindow.instance.angleScrew = 0 end
     end
 end
