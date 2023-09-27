@@ -6,6 +6,17 @@ function BobbyPinActionAnim:isValid()
 	return true
 end
 
+function BobbyPinActionAnim:waitToStart()
+	local zReBLLO = self.lockpick_object
+	if zReBLLO == door or zReBLLO == window then
+			self.character:faceThisObject(self.lockpick_object)
+			return self.character:shouldBeTurning()
+		else
+			self.character:faceThisObject(self.lockpick_object:getVehicle())
+			return self.character:shouldBeTurning()
+	end
+end
+
 function BobbyPinActionAnim:update()
 	local uispeed = UIManager.getSpeedControls():getCurrentGameSpeed()
     if uispeed ~= 1 then
@@ -14,10 +25,10 @@ function BobbyPinActionAnim:update()
 	
 	local zReBLLO = self.lockpick_object
 	if zReBLLO == door or zReBLLO == window then
-		self.character:faceThisObject(self.lockpick_object)	--
-		return self.character:shouldBeTurning()				--
+			self.character:faceThisObject(self.lockpick_object)	
+		else
+			self.character:faceThisObject(self.lockpick_object:getVehicle())
 	end
-	
 end
 
 function BobbyPinActionAnim:start()
@@ -42,7 +53,3 @@ function BobbyPinActionAnim:new(character, lockpick_object)
 	
 	return o
 end
-
-
-
-
