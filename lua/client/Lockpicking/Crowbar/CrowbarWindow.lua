@@ -38,13 +38,7 @@ local MODE_BUILDING_DOOR = 2
 
 local arrowTex = getTexture("media/textures/BetLock_arrow.png") --
 local arrow_scale_step = 0
-local arrowSpeed = 0
-if (getCore():getOptionUIFBO() == true) then
-	arrowSpeed = 3	-- обработка вкл 30 fps
-	else
-	arrowSpeed = 1.4 -- обработка откл 60 fps lock (or vsync 60 fps)?!
-end
-
+local arrowSpeed = 1
 local arrow_dx = arrowSpeed
 local arrow_step_to_x = (WINDOW_WIDTH - xShift*2)/100
 
@@ -75,7 +69,9 @@ function CrowbarWindow:render()
 
     self:drawTexture(arrowTex, xShift - arrowTex:getWidth()/2 + arrow_scale_step*arrow_step_to_x, 75+30, 1, 1, 1, 1)
     
+	
     local currentMillis = math.floor(getTimeInMillis())
+	
     local isNewTimeStep = false
     if lastRenderMillis ~= currentMillis then
         lastRenderMillis = currentMillis
@@ -93,7 +89,8 @@ function CrowbarWindow:render()
     end---
 	
     if isNewTimeStep then
-        arrow_scale_step = arrow_scale_step + arrow_dx
+        -- arrow_scale_step = arrow_scale_step + arrow_dx
+		arrow_scale_step = arrow_scale_step + arrow_dx * UIManager.getMillisSinceLastRender() * 0.12 -- Thanks to Albion!  * UIManager.getMillisSinceLastRender()
         if arrow_scale_step >= 100 then
             arrow_scale_step = 100
             arrow_dx = -arrowSpeed
@@ -117,11 +114,9 @@ function CrowbarWindow:doUnlock()
         --self.lockpick_object:getDoor():setLocked(false);
 		--self.lockpick_object:getDoor():setOpen(true);
 		--self.lockpick_object:getDoor():setLockBroken(true);
-
-        sendClientCommand(self.character, 'crowbar', 'vehicleDoor', { vehicle=self.lockpick_object:getVehicle():getId(), part=self.lockpick_object:getId() })
-
+		sendClientCommand(self.character, 'crowbar', 'vehicleDoor', { vehicle=self.lockpick_object:getVehicle():getId(), part=self.lockpick_object:getId() }) -- (c) Chuckleberry "GOD OF GODS" Finn
+		
         self.character:getEmitter():playSound("UnlockDoor");
-
     elseif self.mode == MODE_WINDOW then	-- ОКНО
         self.lockpick_object:setIsLocked(false)
 
@@ -252,9 +247,6 @@ function CrowbarWindow:createBuildingDoor(playerObj, door)
         spriteName == "location_community_police_01_5"     then 
 
         playerObj:Say(getText("IGUI_zreIsReinforced")) 
-        --self:close()
-        --self:forceStop()
-        --ISPanel.close(self)
     return
     end  
 	
@@ -288,8 +280,14 @@ function CrowbarWindow:initialise()
     CrowbarWindow.instance = self
 
     --
-    -- local skill = self.character:getPerkLevel(Perks.Lockpicking)		-- zReMOD
-    local skill = self.character:getPerkLevel(Perks.Strength)			-- zReMOD
+    -- local skill = self.character:getPerkLevel(Perks.Lockpicking)
+	local zReBLStrength = self.character:getPerkLevel(Perks.Strength)
+	if zReBLStrength <= 2 then -- c 1 по 2 силу 0 навыка
+			skill = 0
+		else
+			skill = zReBLStrength - 2
+	end
+	if skill < 0 then skill = 0 end
     local sizes = BetLock.Utils.getGreenYellowSize(skill, self.diffLevel)
     greenSize = sizes[1]
     yellowSize = sizes[2]
@@ -388,7 +386,10 @@ CrowbarWindow.OnKeyStartPressed = function(key)
     end
 
     if key == Keyboard.KEY_ESCAPE then
-        win:close()
+        --win:close()
+	win:setVisible(false);			-- zRe Force Close FIX
+        win:removeFromUIManager();		-- zRe Force Close FIX
+        win:close()				-- zRe Force Close FIX
     end
 end
 
@@ -408,7 +409,6 @@ CrowbarWindow.onTick = function()
         end
     end
 end
-
 
 Events.OnKeyStartPressed.Add(CrowbarWindow.OnKeyStartPressed);
 Events.OnTick.Add(CrowbarWindow.onTick);
