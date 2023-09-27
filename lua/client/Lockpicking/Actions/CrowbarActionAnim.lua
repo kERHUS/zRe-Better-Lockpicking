@@ -6,6 +6,17 @@ function CrowbarActionAnim:isValid()
 	return true
 end
 
+function CrowbarActionAnim:waitToStart()
+	local zReBLLO = self.lockpick_object
+	if zReBLLO == door or zReBLLO == window then
+			self.character:faceThisObject(self.lockpick_object)
+			return self.character:shouldBeTurning()
+		else
+			self.character:faceThisObject(self.lockpick_object:getVehicle())
+			return self.character:shouldBeTurning()
+	end
+end
+
 function CrowbarActionAnim:update()
 	local uispeed = UIManager.getSpeedControls():getCurrentGameSpeed()
     if uispeed ~= 1 then
@@ -17,14 +28,11 @@ function CrowbarActionAnim:update()
 	end
 	
 	local zReBLLO = self.lockpick_object
-	if zReBLLO == door or zReBLLO == window then			-- work-around for windows and doors
-		self.character:faceThisObject(self.lockpick_object)	--
-		return self.character:shouldBeTurning()				--
+	if zReBLLO == door or zReBLLO == window then
+			self.character:faceThisObject(self.lockpick_object)	
+		else
+			self.character:faceThisObject(self.lockpick_object:getVehicle())
 	end
-	--if zReBLLO == part then
-	--	self.character:faceThisObject(self.vehicle)
-	--	return self.character:shouldBeTurning()
-	--end
 end
 
 function CrowbarActionAnim:start()
@@ -33,22 +41,23 @@ function CrowbarActionAnim:start()
 	else
 		self:setActionAnim("CrowbarAction")
 	end
-	self.sound = getSoundManager():PlayWorldSound("zReBL_crowbarSoundStart", self.character:getCurrentSquare(), 1, 25, 2, true) -- 1, 25, 2
+	--self.sound = getSoundManager():PlayWorldSound("zReBL_crowbarSoundStart", self.character:getCurrentSquare(), 1, 25, 2, true) -- 1, 25, 2
 end
 
 function CrowbarActionAnim:stop()
-	if self.sound and self.sound:isPlaying() then
+	--if self.sound and self.sound:isPlaying() then
 		getSoundManager():StopSound(self.sound)
-    end
+	--end
+
+	
 
 	ISBaseTimedAction.stop(self)
 end
 
 function CrowbarActionAnim:perform()
-	if self.sound and self.sound:isPlaying() then
+	--if self.sound and self.sound:isPlaying() then
 		getSoundManager():StopSound(self.sound)
-    end
-
+    --end
 	ISBaseTimedAction.perform(self)
 end
 
@@ -59,9 +68,6 @@ function CrowbarActionAnim:new(character, isGarage, lockpick_object)
 	self.__index = self
 	o.character = character
 	o.lockpick_object = lockpick_object
-	--if zReBLLO == part then
-	--	o.vehicle = lockpick_object:getVehicle()
-	--end
 	o.maxTime = 50000
 	o.isGarage = isGarage
 	
