@@ -129,3 +129,19 @@ function BetLock.UI.alarmCheck(playerObj, vehicle, part)
         playerObj:getEmitter():playSound("DoorIsLocked")
     end
 end
+
+--- БЛОКИРОВКА ОТКРЫТИЯ БАГАЖНИКА
+--[[        \<.<\        ┏(-Д-┏)～        ]]
+do
+    local original = ISVehicleMenu.onToggleTrunkLocked
+    function ISVehicleMenu.onToggleTrunkLocked(playerObj)
+        local vehicle = playerObj:getVehicle()
+        if not vehicle then return end
+        local doorPart = vehicle:getPartByID("TrunkDoor") or vehicle:getPartByID("DoorRear")
+        if doorPart ~= nil and doorPart:getDoor():isLockBroken() then
+            playerObj:Say(getText("IGUI_PlayerText_VehicleLockIsBroken"))
+            return
+        end
+        original(playerObj)
+    end
+end
